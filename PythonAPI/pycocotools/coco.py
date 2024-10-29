@@ -174,25 +174,31 @@ class COCO:
         ids = [cat['id'] for cat in cats]
         return ids
 
-    def getImgIds(self, imgIds=[], catIds=[]):
+    def getImgIds(self, imgIds=[], catIds=[], operation='intersection'):
         '''
         Get img ids that satisfy given filter conditions.
         :param imgIds (int array) : get imgs for given ids
         :param catIds (int array) : get imgs with all given cats
+        :param operation (str)    : 'union' or 'intersection' for combining catIds
         :return: ids (int array)  : integer array of img ids
         '''
         imgIds = imgIds if _isArrayLike(imgIds) else [imgIds]
         catIds = catIds if _isArrayLike(catIds) else [catIds]
-
+    
         if len(imgIds) == len(catIds) == 0:
             ids = self.imgs.keys()
         else:
-            ids = set(imgIds)
-            for i, catId in enumerate(catIds):
-                if i == 0 and len(ids) == 0:
-                    ids = set(self.catToImgs[catId])
-                else:
-                    ids &= set(self.catToImgs[catId])
+            if operation == 'union':
+                ids = set()
+                for catId in catIds:
+                    ids |= set(self.catToImgs[catId])
+            else:
+                ids = set(imgIds)
+                for i, catId in enumerate(catIds):
+                    if i == 0 and len(ids) == 0:
+                        ids = set(self.catToImgs[catId])
+                    else:
+                        ids &= set(self.catToImgs[catId])
         return list(ids)
 
     def loadAnns(self, ids=[]):
